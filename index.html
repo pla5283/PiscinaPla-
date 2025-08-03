@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Piscina Plazaola</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #e6f2ff; padding: 20px; }
+    h1, h2 { color: #0077b6; }
+    .section { margin-bottom: 25px; }
+    .button { background: #00b4d8; color: white; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+    .button:hover { background: #0096c7; }
+    .admin { background: #ffb703; color: black; }
+  </style>
+</head>
+<body>
+  <h1>🏊 Piscina Plazaola</h1>
+
+  <div class="section" id="login">
+    <h2>🔐 Iniciar sesión</h2>
+    <input type="email" id="email" placeholder="Correo" /><br><br>
+    <input type="password" id="pass" placeholder="Contraseña" /><br><br>
+    <button class="button" onclick="login()">Entrar</button>
+  </div>
+
+  <div class="section" id="reserva" style="display:none;">
+    <h2>📅 Reserva tu hora</h2>
+    <input type="date" id="fecha" /><br><br>
+    <div id="horas">
+      <h3>🕐 Selecciona una hora:</h3>
+    </div>
+    <button class="button" onclick="reservar()">Reservar</button>
+  </div>
+
+  <div class="section" id="tusReservas" style="display:none;">
+    <h2>📋 Tus reservas</h2>
+    <ul id="listaReservas"></ul>
+  </div>
+
+  <div class="section" id="adminPanel" style="display:none;">
+    <h2>🛠 Panel Admin</h2>
+    <ul id="todasReservas"></ul>
+  </div>
+
+<script>
+const admins = ["jonpla1204@gmail.com", "marialamejor1111204@gmail.com"];
+let user = "";
+let reservas = {};
+
+function login() {
+  user = document.getElementById("email").value.trim().toLowerCase();
+  if (!user) return alert("Pon un correo válido");
+  document.getElementById("login").style.display = "none";
+  document.getElementById("reserva").style.display = "block";
+  document.getElementById("tusReservas").style.display = "block";
+  if (admins.includes(user)) {
+    document.getElementById("adminPanel").style.display = "block";
+  }
+  mostrarHoras();
+  mostrarTusReservas();
+  mostrarTodasReservas();
+}
+
+function mostrarHoras() {
+  const horasDiv = document.getElementById("horas");
+  for (let i = 0; i < 24; i++) {
+    const hora = (i < 10 ? "0" : "") + i + ":00";
+    const btn = document.createElement("button");
+    btn.innerText = hora;
+    btn.className = "button";
+    btn.onclick = () => seleccionarHora(hora);
+    horasDiv.appendChild(btn);
+  }
+}
+
+let horaSeleccionada = "";
+function seleccionarHora(hora) {
+  horaSeleccionada = hora;
+  alert("Hora seleccionada: " + hora);
+}
+
+function reservar() {
+  const fecha = document.getElementById("fecha").value;
+  if (!fecha || !horaSeleccionada) return alert("Selecciona día y hora");
+  const clave = fecha + " " + horaSeleccionada;
+  if (!reservas[clave]) reservas[clave] = [];
+  if (reservas[clave].includes(user)) {
+    alert("Ya reservaste esa hora");
+    return;
+  }
+  if (reservas[clave].length >= 1) {
+    alert("Hora ya ocupada");
+    return;
+  }
+  reservas[clave].push(user);
+  alert("✅ Reserva hecha para " + clave);
+  mostrarTusReservas();
+  mostrarTodasReservas();
+}
+
+function mostrarTusReservas() {
+  const ul = document.getElementById("listaReservas");
+  ul.innerHTML = "";
+  for (const clave in reservas) {
+    if (reservas[clave].includes(user)) {
+      const li = document.createElement("li");
+      li.innerText = clave;
+      const btn = document.createElement("button");
+      btn.innerText = "❌ Cancelar";
+      btn.className = "button";
+      btn.onclick = () => cancelar(clave);
+      li.appendChild(btn);
+      ul.appendChild(li);
+    }
+  }
+}
+
+function cancelar(clave) {
+  reservas[clave] = reservas[clave].filter(u => u !== user);
+  alert("Reserva cancelada");
+  mostrarTusReservas();
+  mostrarTodasReservas();
+}
+
+function mostrarTodasReservas() {
+  if (!admins.includes(user)) return;
+  const ul = document.getElementById("todasReservas");
+  ul.innerHTML = "";
+  for (const clave in reservas) {
+    const li = document.createElement("li");
+    li.innerText = clave + ": " + reservas[clave].join(", ");
+    ul.appendChild(li);
+  }
+}
+</script>
+
+</body>
+</html>
